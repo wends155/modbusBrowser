@@ -30,7 +30,7 @@ You can build and run the application using the provided `Makefile`.
     ```shell
     make run
     ```
-    Executes the application directly. This will continuously read Modbus registers at the interval specified by `delay_seconds` in the config. To stop the application, press `Ctrl+C` for a graceful exit.
+    Executes the application directly. This will continuously read Modbus registers at the interval specified by `delay_seconds` in the config. The output will now display each register in an `address:value` format (e.g., `4000:0, 4001:0`). To prevent flickering and mixed characters, the application resets the cursor to the top-left of the console and clears the line before each read. To stop the application, press `Ctrl+C` for a graceful exit.
 
 *   **Clean the build directory:**
     ```shell

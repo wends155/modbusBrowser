@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a configurable interval. The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C).
+This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a configurable interval. The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C) and provides a flicker-free console output by resetting the cursor position and clearing the line before each read operation. The output now presents the registers in a detailed `address:value` format.
 
 ## Configuration
 
@@ -50,8 +50,9 @@ The project includes a `Makefile` to streamline common development and build tas
 
 ## Development Conventions
 
-*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers at a configurable interval.
+*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers at a configurable interval. The output now provides a detailed breakdown of registers in `address:value` format, displaying the specific starting address and quantity of registers read.
 *   **Graceful Shutdown:** The application registers a signal handler to gracefully exit when an interrupt signal (like `Ctrl+C`) is received, ensuring proper resource cleanup.
+*   **Flicker-Free Screen Update:** To prevent screen flickering and mixed characters, the application uses a `resetCursor` function that prints an ANSI escape code (`\033[H`) to move the cursor to the top-left corner of the console before each read. After printing the data, it uses another ANSI escape code (`\033[K`) to clear the rest of the line. An initial screen clear is performed using a platform-aware `clearScreen` function.
 
 ## Dependencies
 
