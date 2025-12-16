@@ -16,6 +16,7 @@ type Config struct {
 	ServerPort   int    `toml:"server_port"`
 	StartAddress uint16 `toml:"start_address"`
 	Quantity     uint16 `toml:"quantity"`
+	DelaySeconds int    `toml:"delay_seconds"`
 }
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 		ServerPort:   502,
 		StartAddress: 0,
 		Quantity:     2,
+		DelaySeconds: 1,
 	}
 
 	// Load configuration from toml file if it exists
@@ -43,13 +45,14 @@ func main() {
 	client := modbus.NewClient(handler)
 
 	fmt.Printf("Attempting to connect to Modbus TCP server at %s\n", address)
+	fmt.Printf("Reading registers every %d second(s).\n", cfg.DelaySeconds)
 	fmt.Println("Press Ctrl+C to exit.")
 
 	// Set up channel for Ctrl+C
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(time.Duration(cfg.DelaySeconds) * time.Second)
 	defer ticker.Stop()
 
 	for {

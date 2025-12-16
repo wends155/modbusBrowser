@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a 1-second interval. The application's behavior, including the server's address, port, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C).
+This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a configurable interval. The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C).
 
 ## Configuration
 
@@ -15,6 +15,7 @@ server_ip = "localhost"
 server_port = 5020
 start_address = 4000
 quantity = 2
+delay_seconds = 1
 ```
 
 **Configurable Parameters:**
@@ -23,6 +24,7 @@ quantity = 2
 *   `server_port`: Defines the port number on which the Modbus TCP server is listening.
 *   `start_address`: The starting address of the holding registers from which the application will begin reading data.
 *   `quantity`: The total number of holding registers to read, starting from `start_address`.
+*   `delay_seconds`: The delay in seconds between each Modbus read operation.
 
 ## Building and Running
 
@@ -48,7 +50,7 @@ The project includes a `Makefile` to streamline common development and build tas
 
 ## Development Conventions
 
-*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers every second.
+*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers at a configurable interval.
 *   **Graceful Shutdown:** The application registers a signal handler to gracefully exit when an interrupt signal (like `Ctrl+C`) is received, ensuring proper resource cleanup.
 
 ## Dependencies
