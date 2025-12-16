@@ -6,3 +6,10 @@ build-prod:
 
 run:
 	@go run main.go
+
+clean:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "if exist bin rmdir /S /Q bin"
+else
+	@rm -rf bin
+endif

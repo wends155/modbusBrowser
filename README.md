@@ -29,4 +29,9 @@ You can build and run the application using the provided `Makefile`.
     make run
     ```
 
+*   **Clean the build directory:**
+    ```shell
+    make clean
+    ```
+
 The module path for this project is `github.com/wends155/modbusBrowser`.
