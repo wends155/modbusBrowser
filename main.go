@@ -11,51 +11,24 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/goburrow/modbus"
 	"github.com/gorilla/websocket"
 )
 
 //go:embed all:web
 var webFS embed.FS
 
-// Global variables for configuration and WebSocket upgrader.
-var (
-	cfg      Config
-	upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-		CheckOrigin: func(r *http.Request) bool {
-			return true // Allow all origins for WebSocket connections
-		},
-	}
-)
-
-// Config holds the application's configuration.
-type Config struct {
-	ServerIP     string `toml:"server_ip"`
-	ServerPort   int    `toml:"server_port"`
-	StartAddress uint16 `toml:"start_address"`
-	Quantity     uint16 `toml:"quantity"`
-	DelaySeconds int    `toml:"delay_seconds"`
-	WebUIPort    int    `toml:"web_ui_port"`
-}
-
-// WebSocketMessage defines the structure for messages sent over the WebSocket.
-type WebSocketMessage struct {
-	Type      string `json:"type"`
-	Content   string `json:"content"`
-	Timestamp string `json:"timestamp"`
-}
-
 // loadConfig loads the configuration from config.toml, creating the file with default values if it doesn't exist.
-func loadConfig() {
+func loadConfig() Config {
 	// Default configuration
-	cfg = Config{
+	cfg := Config{
 		ServerIP:     "localhost",
-		ServerPort:   502,
+		ServerPort:   5020,
 		StartAddress: 0,
 		Quantity:     2,
 		DelaySeconds: 1,
 		WebUIPort:    8080,
+		SlaveID:      1,
 	}
 
 	configFilePath := "config.toml"
@@ -78,10 +51,11 @@ func loadConfig() {
 	if _, err := toml.DecodeFile(configFilePath, &cfg); err != nil {
 		log.Printf("Error loading config.toml: %v. Using default configuration.", err)
 	}
+	return cfg
 }
 
 // setupRouter creates and configures the Gin router.
-func setupRouter() *gin.Engine {
+func setupRouter(cfg Config) *gin.Engine {
 	router := gin.Default()
 
 	// Use gzip middleware
@@ -103,9 +77,26 @@ func setupRouter() *gin.Engine {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
 	})
 
+	// Create a new Modbus client.
+	address := fmt.Sprintf("%s:%d", cfg.ServerIP, cfg.ServerPort)
+	handler := modbus.NewTCPClientHandler(address)
+	handler.SlaveId = cfg.SlaveID
+	client := modbus.NewClient(handler)
+
 	// WebSocket endpoint
+	wsHandler := &WsHandler{
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true // Allow all origins for WebSocket connections
+			},
+		},
+		cfg:          cfg,
+		modbusClient: client,
+	}
 	router.GET("/ws", func(c *gin.Context) {
-		websocketHandler(c.Writer, c.Request)
+		wsHandler.ServeHTTP(c.Writer, c.Request)
 	})
 
 	return router
@@ -119,10 +110,12 @@ func main() {
 		}
 	}
 
-	loadConfig()
-	router := setupRouter()
+	cfg := loadConfig()
+	router := setupRouter(cfg)
 
 	webAddress := fmt.Sprintf(":%d", cfg.WebUIPort)
 	fmt.Printf("Starting web server on http://localhost%s\n", webAddress)
-	router.Run(webAddress)
+	if err := router.Run(webAddress); err != nil {
+		log.Fatalf("Failed to start web server: %v", err)
+	}
 }

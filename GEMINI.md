@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-This project, `modbusBrowser`, is a web-based tool developed in Go designed to interact with Modbus TCP servers. It provides a web interface to continuously monitor a range of holding registers from a specified Modbus TCP server. The application uses a Gin web server to serve the UI and a WebSocket connection to stream data in real-time. The UI now prominently displays the connected Modbus server's address and port, along with the continuously updated register values and a timestamp of the last update.
+This project, `modbusBrowser`, is a web-based tool developed in Go designed to interact with Modbus TCP servers. It provides a web interface to continuously monitor a range of holding registers from a specified Modbus TCP server. The application uses a Gin web server to serve the UI and a WebSocket connection to stream data in real-time. The UI now prominently displays the connected Modbus server's address and port, along with the continuously updated register values in a table format and a timestamp of the last update.
 
-The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file.
+The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address, quantity, and slave ID), is configurable via a `config.toml` file.
 
 ## Architecture
 
@@ -25,6 +25,7 @@ start_address = 4000
 quantity = 2
 delay_seconds = 1
 web_ui_port = 8080
+slave_id = 1
 ```
 
 **Configurable Parameters:**
@@ -35,6 +36,7 @@ web_ui_port = 8080
 *   `quantity`: The total number of holding registers to read, starting from `start_address`.
 *   `delay_seconds`: The delay in seconds between each Modbus read operation.
 *   `web_ui_port`: The port on which the web UI will be served.
+*   `slave_id`: The Modbus slave ID to communicate with.
 
 ## Building and Running
 
@@ -60,10 +62,12 @@ The project includes a `Makefile` to streamline common development and build tas
 
 ## Development Conventions
 
-*   **Code Structure:** The Go code is organized into two main files: `main.go`, which handles application setup and routing, and `handlers.go`, which contains the WebSocket and Modbus logic.
+*   **Code Structure:** The Go code is organized into two main files: `main.go`, which handles application setup and routing, and `handlers.go`, which contains the WebSocket and Modbus logic. Dependency injection is used to pass the configuration and Modbus client to the WebSocket handler.
+*   **Efficiency:** A `strings.Builder` is used for efficient string concatenation when formatting Modbus data.
+*   **Robustness:** The error returned by `router.Run()` is checked to ensure the application exits gracefully if the web server fails to start.
 *   **Testing:** Unit tests are included to verify the application's functionality. You can run the tests using `go test ./...`.
 *   **Gin Mode:** Gin runs in `DebugMode` by default, but it switches to `ReleaseMode` when the `release` build tag is used during compilation, improving performance and reducing logging for production deployments.
-*   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data, and includes a favicon for browser tab identification.
+*   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data in a table format. A visual indicator (a brief color change) is used to show when the data is updated.
 *   **Asset Compression:** Gzip compression is enabled for static asset delivery to optimize performance.
 *   **WebSocket Communication:**
     *   The frontend establishes a WebSocket connection to the `/ws` endpoint to receive real-time data.

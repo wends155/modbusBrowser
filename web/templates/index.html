@@ -11,9 +11,17 @@
     <h1>Modbus Browser</h1>
     <div id="server-info"></div>
     <div id="timestamp"></div>
-    <div id="data">
-        Waiting for data...
-    </div>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Address</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody id="data-table-body">
+            <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+    </table>
     <script src="/static/app.js"></script>
     <footer>
         Made by Wendell Saligan
