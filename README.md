@@ -4,9 +4,9 @@ A command-line tool written in Go to browse and query Modbus TCP servers.
 
 ## Configuration
 
-This tool can be configured using a `config.toml` file in the project root. If no `config.toml` is present, it will default to connecting to `localhost:502`, reading 2 registers starting from address 0, with a 1-second delay.
+This tool can be configured using a `config.toml` file in the project root. If this file is not found, it will be automatically created with default values.
 
-Example `config.toml`:
+**Example `config.toml`:**
 
 ```toml
 server_ip = "localhost"
@@ -15,6 +15,14 @@ start_address = 4000
 quantity = 2
 delay_seconds = 1
 ```
+
+**Configurable Parameters:**
+
+*   `server_ip`: Specifies the IP address or hostname of the Modbus TCP server to connect to.
+*   `server_port`: Defines the port number on which the Modbus TCP server is listening.
+*   `start_address`: The starting address of the holding registers from which the application will begin reading data.
+*   `quantity`: The total number of holding registers to read, starting from `start_address`.
+*   `delay_seconds`: The delay in seconds between each Modbus read operation.
 
 ## Usage
 
@@ -40,8 +48,8 @@ You can build and run the application using the provided `Makefile`.
 
 ## Error Handling
 
-*   If `config.toml` is present but contains errors, a warning will be displayed, and the application will fall back to its default settings.
-*   The application performs an initial connection test. If it cannot connect to the Modbus server on startup, it will exit with a fatal error.
-*   During operation, if a Modbus read fails, the error will be printed to the console, and the application will attempt to read again on the next cycle.
+*   **Configuration:** If `config.toml` is not found, it will be created with default values. If it is present but contains errors, a warning will be displayed, and the application will fall back to its default settings.
+*   **Initial Connection:** The application performs an initial connection test. If it cannot connect to the Modbus server on startup, it will exit with a fatal error.
+*   **During Operation:** If a Modbus read fails, the error will be printed to the console, and the application will attempt to read again on the next cycle.
 
 The module path for this project is `github.com/wends155/modbusBrowser`.

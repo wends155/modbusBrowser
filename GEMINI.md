@@ -6,7 +6,7 @@ This project, `modbusBrowser`, is a command-line tool developed in Go designed t
 
 ## Configuration
 
-The application's settings are managed through a `config.toml` file. If this file is not found, the application uses default hardcoded values.
+The application's settings are managed through a `config.toml` file. If this file is not found, it will be automatically created with default values.
 
 **Example `config.toml`:**
 
@@ -54,7 +54,7 @@ The project includes a `Makefile` to streamline common development and build tas
 *   **Graceful Shutdown:** The application registers a signal handler to gracefully exit when an interrupt signal (like `Ctrl+C`) is received, ensuring proper resource cleanup.
 *   **Flicker-Free Screen Update:** To prevent screen flickering and mixed characters, the application uses a `resetCursor` function that prints an ANSI escape code (`\033[H`) to move the cursor to the top-left corner of the console before each read. After printing the data, it uses another ANSI escape code (`\033[K`) to clear the rest of the line. An initial screen clear is performed using a platform-aware `clearScreen` function.
 *   **Error Handling:**
-    *   **Configuration:** If `config.toml` is present but invalid, a warning is logged, and the application proceeds with the default configuration.
+    *   **Configuration:** If `config.toml` is not found, it will be created with default values. If it is present but invalid, a warning is logged, and the application proceeds with the default configuration.
     *   **Initial Connection:** The application performs an initial Modbus read to verify the connection. If it fails, the program exits with a fatal error.
     *   **Read Errors:** During the continuous reading loop, any errors are printed to the console, and the application continues to the next read attempt. This makes the tool resilient to transient network issues.
 

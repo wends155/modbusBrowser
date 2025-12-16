@@ -47,11 +47,25 @@ func main() {
 		DelaySeconds: 1,
 	}
 
-	// Load configuration from toml file if it exists
-	if _, err := os.Stat("config.toml"); err == nil {
-		if _, err := toml.DecodeFile("config.toml", &cfg); err != nil {
-			log.Printf("Error loading config.toml: %v. Using default configuration.", err)
+	configFilePath := "config.toml"
+
+	// Check if config.toml exists, if not, create it with default values
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		log.Printf("config.toml not found. Creating with default values.")
+		file, err := os.Create(configFilePath)
+		if err != nil {
+			log.Fatalf("Failed to create config.toml: %v", err)
 		}
+		defer file.Close()
+
+		if err := toml.NewEncoder(file).Encode(cfg); err != nil {
+			log.Fatalf("Failed to write default config to config.toml: %v", err)
+		}
+	}
+
+	// Load configuration from toml file
+	if _, err := toml.DecodeFile(configFilePath, &cfg); err != nil {
+		log.Printf("Error loading config.toml: %v. Using default configuration.", err)
 	}
 
 	address := fmt.Sprintf("%s:%d", cfg.ServerIP, cfg.ServerPort)
