@@ -62,7 +62,7 @@ go test ./...
 
 ## How it Works
 
-*   The Go backend is organized into `main.go` for application setup and `handlers.go` for WebSocket and Modbus logic. It serves a simple HTML/CSS/JS frontend. The `index.html` file is read from the embedded filesystem and written directly to the HTTP response. Asset delivery is optimized using gzip compression.
+*   The Go backend is organized into `main.go` for application setup and `handlers.go` for WebSocket and Modbus logic. It serves a simple HTML/CSS/JS frontend, including a favicon. The `index.html` file is read from the embedded filesystem and written directly to the HTTP response. Asset delivery is optimized using gzip compression.
 *   The backend uses the Gin web framework. In production builds, Gin is configured to run in `ReleaseMode`.
 *   The frontend establishes a WebSocket connection to the `/ws` endpoint on the backend.
 *   The backend sends structured JSON messages over the WebSocket.

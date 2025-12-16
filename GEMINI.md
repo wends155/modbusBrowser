@@ -63,7 +63,7 @@ The project includes a `Makefile` to streamline common development and build tas
 *   **Code Structure:** The Go code is organized into two main files: `main.go`, which handles application setup and routing, and `handlers.go`, which contains the WebSocket and Modbus logic.
 *   **Testing:** Unit tests are included to verify the application's functionality. You can run the tests using `go test ./...`.
 *   **Gin Mode:** Gin runs in `DebugMode` by default, but it switches to `ReleaseMode` when the `release` build tag is used during compilation, improving performance and reducing logging for production deployments.
-*   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data.
+*   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data, and includes a favicon for browser tab identification.
 *   **Asset Compression:** Gzip compression is enabled for static asset delivery to optimize performance.
 *   **WebSocket Communication:**
     *   The frontend establishes a WebSocket connection to the `/ws` endpoint to receive real-time data.
