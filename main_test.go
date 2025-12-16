@@ -65,7 +65,7 @@ func TestWebSocketHandler(t *testing.T) {
 			},
 		}
 		wsHandler := &WsHandler{
-			upgrader:     websocket.Upgrader{},
+			upgrader: websocket.Upgrader{},
 			cfg: Config{
 				StartAddress: 4000,
 				Quantity:     1,
@@ -100,7 +100,7 @@ func TestWebSocketHandler(t *testing.T) {
 			},
 		}
 		wsHandler := &WsHandler{
-			upgrader:     websocket.Upgrader{},
+			upgrader: websocket.Upgrader{},
 			cfg: Config{
 				DelaySeconds: 1,
 			},
@@ -134,7 +134,7 @@ func TestLoadConfig(t *testing.T) {
 
 		cfg := loadConfig()
 		assert.Equal(t, "localhost", cfg.ServerIP)
-		assert.Equal(t, 502, cfg.ServerPort)
+		assert.Equal(t, 5020, cfg.ServerPort)
 
 		// Check that the file was created
 		_, err := os.Stat("config.toml")
@@ -177,7 +177,7 @@ server_port = "not-a-number"`
 
 		cfg := loadConfig()
 		// It should fall back to default values
-		assert.Equal(t, 502, cfg.ServerPort)
+		assert.Equal(t, 5020, cfg.ServerPort)
 
 		os.Remove("config.toml")
 	})
