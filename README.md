@@ -52,11 +52,7 @@ You can build and run the application using the provided `Makefile`.
     ```
     This will start the web server. You can then access the web UI by navigating to `http://localhost:<web_ui_port>` in your web browser.
 
-*   **Clean the build directory:**
-    ```shell
-    make clean
-    ```
-    Removes the `bin/` and `web/` directories and their contents.
+
 
 ## How it Works
 
