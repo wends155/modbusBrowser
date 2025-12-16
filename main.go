@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/goburrow/modbus"
@@ -40,13 +43,28 @@ func main() {
 	client := modbus.NewClient(handler)
 
 	fmt.Printf("Attempting to connect to Modbus TCP server at %s\n", address)
+	fmt.Println("Press Ctrl+C to exit.")
 
-	// Example: Read holding registers based on config
-	results, err := client.ReadHoldingRegisters(cfg.StartAddress, cfg.Quantity)
-	if err != nil {
-		fmt.Printf("Error reading holding registers: %v\n", err)
-		return
+	// Set up channel for Ctrl+C
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// Read holding registers based on config
+			results, err := client.ReadHoldingRegisters(cfg.StartAddress, cfg.Quantity)
+			if err != nil {
+				fmt.Printf("Error reading holding registers: %v\n", err)
+				continue
+			}
+			fmt.Printf("Read holding registers: %v\n", results)
+		case <-sigChan:
+			fmt.Println("\nExiting.")
+			return
+		}
 	}
-
-	fmt.Printf("Successfully read holding registers: %v\n", results)
 }

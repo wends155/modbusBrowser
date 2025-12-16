@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and read a range of holding registers. The application's behavior, including the server's address, port, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file.
+This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a 1-second interval. The application's behavior, including the server's address, port, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C).
 
 ## Configuration
 
@@ -45,6 +45,11 @@ The project includes a `Makefile` to streamline common development and build tas
     make run
     ```
     This command uses `go run main.go` to execute the application directly from the source code. This is convenient for development and testing as it does not require an explicit build step beforehand.
+
+## Development Conventions
+
+*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers every second.
+*   **Graceful Shutdown:** The application registers a signal handler to gracefully exit when an interrupt signal (like `Ctrl+C`) is received, ensuring proper resource cleanup.
 
 ## Dependencies
 
