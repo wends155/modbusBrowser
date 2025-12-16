@@ -2,7 +2,15 @@
 
 ## Project Overview
 
-This project, `modbusBrowser`, is a command-line tool developed in Go designed to interact with Modbus TCP servers. Its primary function is to connect to a specified Modbus TCP server and continuously read a range of holding registers at a configurable interval. The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file. The application also supports graceful shutdown upon receiving an interrupt signal (e.g., Ctrl+C) and provides a flicker-free console output by resetting the cursor position and clearing the line before each read operation. The output now presents the registers in a detailed `address:value` format.
+This project, `modbusBrowser`, is a web-based tool developed in Go designed to interact with Modbus TCP servers. It provides a web interface to continuously monitor a range of holding registers from a specified Modbus TCP server. The application uses a Gin web server to serve the UI and a WebSocket connection to stream data in real-time. The UI now prominently displays the connected Modbus server's address and port, along with the continuously updated register values and a timestamp of the last update.
+
+The application's behavior, including the server's address, port, read interval, and the Modbus read parameters (start address and quantity of registers), is configurable via a `config.toml` file.
+
+## Architecture
+
+*   **Backend:** A Go application using the Gin framework to serve a web UI and handle WebSocket connections.
+*   **Frontend:** A simple HTML/CSS/JS single-page application that connects to the backend via a WebSocket to receive and display real-time Modbus data.
+*   **Embedding:** The entire web UI (HTML, CSS, JS) is embedded into the Go binary using the `embed` package. This creates a self-contained, single-executable application.
 
 ## Configuration
 
@@ -16,6 +24,7 @@ server_port = 5020
 start_address = 4000
 quantity = 2
 delay_seconds = 1
+web_ui_port = 8080
 ```
 
 **Configurable Parameters:**
@@ -25,6 +34,7 @@ delay_seconds = 1
 *   `start_address`: The starting address of the holding registers from which the application will begin reading data.
 *   `quantity`: The total number of holding registers to read, starting from `start_address`.
 *   `delay_seconds`: The delay in seconds between each Modbus read operation.
+*   `web_ui_port`: The port on which the web UI will be served.
 
 ## Building and Running
 
@@ -40,27 +50,35 @@ The project includes a `Makefile` to streamline common development and build tas
     ```shell
     make build-prod
     ```
-    This command also compiles the application but includes `ldflags="-s -w"` to strip debug information and symbol tables, resulting in a smaller executable suitable for production deployment. The output executable is `bin/modbusBrowser.exe`.
+    This command compiles the application with optimizations (`-ldflags="-s -w"`) and the `release` build tag. When this build tag is present, Gin runs in `ReleaseMode`, which disables debug output and optimizes performance for production.
 
 *   **Run the application:**
     ```shell
     make run
     ```
-    This command uses `go run main.go` to execute the application directly from the source code. This is convenient for development and testing as it does not require an explicit build step beforehand.
+    This command starts the web server on the port specified by `web_ui_port` in the configuration.
 
 ## Development Conventions
 
-*   **Continuous Reading:** The `main` function now includes a continuous loop that reads Modbus registers at a configurable interval. The output now provides a detailed breakdown of registers in `address:value` format, displaying the specific starting address and quantity of registers read.
-*   **Graceful Shutdown:** The application registers a signal handler to gracefully exit when an interrupt signal (like `Ctrl+C`) is received, ensuring proper resource cleanup.
-*   **Flicker-Free Screen Update:** To prevent screen flickering and mixed characters, the application uses a `resetCursor` function that prints an ANSI escape code (`\033[H`) to move the cursor to the top-left corner of the console before each read. After printing the data, it uses another ANSI escape code (`\033[K`) to clear the rest of the line. An initial screen clear is performed using a platform-aware `clearScreen` function.
+*   **Gin Mode:** Gin runs in `DebugMode` by default, but it switches to `ReleaseMode` when the `release` build tag is used during compilation, improving performance and reducing logging for production deployments.
+*   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data.
+*   **Asset Compression:** Gzip compression is enabled for static asset delivery to optimize performance.
+*   **WebSocket Communication:**
+    *   The frontend establishes a WebSocket connection to the `/ws` endpoint to receive real-time data.
+    *   The backend sends structured JSON messages over the WebSocket.
+    *   A message with `Type: "serverInfo"` and `Content: "Server: <ip>:<port>"` is sent upon connection to display server details.
+    *   Messages with `Type: "modbusData"` contain the `address:value` formatted Modbus register data and a `Timestamp`.
 *   **Error Handling:**
     *   **Configuration:** If `config.toml` is not found, it will be created with default values. If it is present but invalid, a warning is logged, and the application proceeds with the default configuration.
-    *   **Initial Connection:** The application performs an initial Modbus read to verify the connection. If it fails, the program exits with a fatal error.
-    *   **Read Errors:** During the continuous reading loop, any errors are printed to the console, and the application continues to the next read attempt. This makes the tool resilient to transient network issues.
+    *   **WebSocket Errors:** Errors during WebSocket communication are logged to the console.
+    *   **Modbus Errors:** Errors during Modbus reads are sent over the WebSocket to be displayed in the UI.
 
 ## Dependencies
 
 The project relies on the following Go modules:
 
-*   `github.com/goburrow/modbus`: This library provides the necessary functionalities for Modbus TCP communication, enabling the application to establish connections and interact with Modbus devices.
-*   `github.com/BurntSushi/toml`: Used for parsing and loading configuration settings from the `config.toml` file, offering a structured and easy-to-manage way to configure the application.
+*   `github.com/gin-gonic/gin`: A web framework for Go.
+*   `github.com/gorilla/websocket`: A WebSocket implementation for Go.
+*   `github.com/goburrow/modbus`: This library provides the necessary functionalities for Modbus TCP communication.
+*   `github.com/BurntSushi/toml`: Used for parsing and loading configuration settings from the `config.toml` file.
+*   `github.com/gin-contrib/gzip`: Gin middleware for Gzip compression.
