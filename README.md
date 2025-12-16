@@ -38,4 +38,10 @@ You can build and run the application using the provided `Makefile`.
     ```
     Removes the `bin/` directory and its contents.
 
+## Error Handling
+
+*   If `config.toml` is present but contains errors, a warning will be displayed, and the application will fall back to its default settings.
+*   The application performs an initial connection test. If it cannot connect to the Modbus server on startup, it will exit with a fatal error.
+*   During operation, if a Modbus read fails, the error will be printed to the console, and the application will attempt to read again on the next cycle.
+
 The module path for this project is `github.com/wends155/modbusBrowser`.

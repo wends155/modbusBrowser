@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -49,7 +50,7 @@ func main() {
 	// Load configuration from toml file if it exists
 	if _, err := os.Stat("config.toml"); err == nil {
 		if _, err := toml.DecodeFile("config.toml", &cfg); err != nil {
-			fmt.Printf("Error loading config.toml: %v\n", err)
+			log.Printf("Error loading config.toml: %v. Using default configuration.", err)
 		}
 	}
 
@@ -61,6 +62,11 @@ func main() {
 	handler.SlaveId = 1
 	client := modbus.NewClient(handler)
 
+	// Initial connection check
+	if _, err := client.ReadHoldingRegisters(cfg.StartAddress, 1); err != nil {
+		log.Fatalf("Failed to connect to Modbus server at %s: %v", address, err)
+	}
+
 	// Set up channel for Ctrl+C
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -70,7 +76,7 @@ func main() {
 
 	// Clear the screen once before the loop
 	clearScreen()
-	fmt.Printf("Attempting to connect to Modbus TCP server at %s\n", address)
+	fmt.Printf("Successfully connected to Modbus TCP server at %s\n", address)
 	fmt.Printf("Reading registers every %d second(s).\n", cfg.DelaySeconds)
 	fmt.Println("Press Ctrl+C to exit.")
 
@@ -80,7 +86,8 @@ func main() {
 			// Read holding registers based on config
 			results, err := client.ReadHoldingRegisters(cfg.StartAddress, cfg.Quantity)
 			if err != nil {
-				fmt.Printf("Error reading holding registers: %v\n", err)
+				resetCursor()
+				fmt.Printf("Error reading holding registers: %v\033[K\n", err)
 				continue
 			}
 			resetCursor()
