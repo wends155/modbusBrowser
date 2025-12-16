@@ -6,4 +6,7 @@ build-prod:
 
 run:
 	# This will start the web server on http://localhost:8080
-	@go run main.go
+	@go run .
+
+test:
+	@go test ./...

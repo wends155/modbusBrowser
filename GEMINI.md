@@ -8,7 +8,7 @@ The application's behavior, including the server's address, port, read interval,
 
 ## Architecture
 
-*   **Backend:** A Go application using the Gin framework to serve a web UI and handle WebSocket connections.
+*   **Backend:** A Go application using the Gin framework to serve a web UI and handle WebSocket connections. The code is organized into `main.go` for setup and `handlers.go` for WebSocket and Modbus logic.
 *   **Frontend:** A simple HTML/CSS/JS single-page application that connects to the backend via a WebSocket to receive and display real-time Modbus data.
 *   **Embedding:** The entire web UI (HTML, CSS, JS) is embedded into the Go binary using the `embed` package. This creates a self-contained, single-executable application.
 
@@ -56,10 +56,12 @@ The project includes a `Makefile` to streamline common development and build tas
     ```shell
     make run
     ```
-    This command starts the web server on the port specified by `web_ui_port` in the configuration.
+    This command uses `go run .` to compile and run the application, which starts the web server on the port specified by `web_ui_port` in the configuration.
 
 ## Development Conventions
 
+*   **Code Structure:** The Go code is organized into two main files: `main.go`, which handles application setup and routing, and `handlers.go`, which contains the WebSocket and Modbus logic.
+*   **Testing:** Unit tests are included to verify the application's functionality. You can run the tests using `go test ./...`.
 *   **Gin Mode:** Gin runs in `DebugMode` by default, but it switches to `ReleaseMode` when the `release` build tag is used during compilation, improving performance and reducing logging for production deployments.
 *   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data.
 *   **Asset Compression:** Gzip compression is enabled for static asset delivery to optimize performance.
