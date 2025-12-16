@@ -1,0 +1,4 @@
+server_ip = "localhost"
+server_port = 5020
+start_address = 4000
+quantity = 2
