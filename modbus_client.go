@@ -13,7 +13,6 @@ type ModbusClientInterface interface {
 	Open() error
 	Close() error
 	SetUnitId(slaveID byte)
-	ReadHoldingRegisters(address, quantity uint16) ([]uint16, error)
 	ReadRegisters(addr uint16, quantity uint16) ([]uint16, error)
 	// Add other Modbus functions as needed
 

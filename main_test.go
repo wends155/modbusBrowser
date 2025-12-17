@@ -15,11 +15,11 @@ import (
 
 // mockModbusClientAdapter is a mock implementation of the ModbusClientInterface.
 type mockModbusClientAdapter struct {
-	OpenFunc                 func() error
-	CloseFunc                func() error
-	SetUnitIdFunc            func(slaveID byte)
-	ReadHoldingRegistersFunc func(address, quantity uint16) ([]uint16, error)
-	ReadRegistersFunc        func(address, quantity uint16) ([]uint16, error)
+	OpenFunc      func() error
+	CloseFunc     func() error
+	SetUnitIdFunc func(slaveID byte)
+
+	ReadRegistersFunc func(address, quantity uint16) ([]uint16, error)
 }
 
 // implement the interface
@@ -42,13 +42,6 @@ func (m *mockModbusClientAdapter) SetUnitId(slaveID byte) {
 		return
 	}
 	m.SetUnitIdFunc(slaveID)
-}
-
-func (m *mockModbusClientAdapter) ReadHoldingRegisters(address, quantity uint16) ([]uint16, error) {
-	if m.ReadHoldingRegistersFunc == nil {
-		return nil, errors.New("ReadHoldingRegisters not implemented")
-	}
-	return m.ReadHoldingRegistersFunc(address, quantity)
 }
 
 func (m *mockModbusClientAdapter) ReadRegisters(address, quantity uint16) ([]uint16, error) {
@@ -129,8 +122,19 @@ func TestWebSocketHandler(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
+	// Use a temporary working directory so tests don't modify the user's config.toml
+	tmpDir, err := os.MkdirTemp("", "config_test")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+	defer func() { _ = os.Chdir(cwd) }()
+
+	err = os.Chdir(tmpDir)
+	assert.NoError(t, err)
+
 	t.Run("Creates default config if not found", func(t *testing.T) {
-		os.Remove("config.toml")
 		cfg := loadConfig()
 		assert.Equal(t, "localhost", cfg.ServerIP)
 		assert.Equal(t, 5020, cfg.ServerPort)
@@ -138,11 +142,9 @@ func TestLoadConfig(t *testing.T) {
 
 		_, err := os.Stat("config.toml")
 		assert.NoError(t, err)
-		os.Remove("config.toml")
 	})
 
 	t.Run("Loads existing config", func(t *testing.T) {
-		os.Remove("config.toml")
 		file, err := os.Create("config.toml")
 		assert.NoError(t, err)
 
@@ -163,12 +165,9 @@ func TestLoadConfig(t *testing.T) {
 		assert.Equal(t, "192.168.1.100", cfg.ServerIP)
 		assert.Equal(t, 9090, cfg.WebUIPort)
 		assert.Equal(t, byte(2), cfg.SlaveID)
-
-		os.Remove("config.toml")
 	})
 
 	t.Run("Uses defaults for invalid config", func(t *testing.T) {
-		os.Remove("config.toml")
 		invalidContent := `server_ip = "localhost"
 server_port = "not-a-number"`
 		err := os.WriteFile("config.toml", []byte(invalidContent), 0644)
@@ -177,7 +176,5 @@ server_port = "not-a-number"`
 		cfg := loadConfig()
 		assert.Equal(t, 5020, cfg.ServerPort)
 		assert.Equal(t, byte(1), cfg.SlaveID) // Ensure SlaveID defaults correctly
-
-		os.Remove("config.toml")
 	})
 }
