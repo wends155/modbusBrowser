@@ -6,8 +6,8 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/gin-contrib/gzip v1.2.5
 	github.com/gin-gonic/gin v1.11.0
-	github.com/goburrow/modbus v0.1.0
 	github.com/gorilla/websocket v1.5.3
+	github.com/simonvetter/modbus v1.6.4
 	github.com/stretchr/testify v1.11.1
 )
 

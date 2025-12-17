@@ -62,12 +62,13 @@ The project includes a `Makefile` to streamline common development and build tas
 
 ## Development Conventions
 
-*   **Code Structure:** The Go code is organized into two main files: `main.go`, which handles application setup and routing, and `handlers.go`, which contains the WebSocket and Modbus logic. Dependency injection is used to pass the configuration and Modbus client to the WebSocket handler.
+*   **Code Structure:** The Go code is organized into three main files: `main.go` (application setup and routing), `handlers.go` (WebSocket and Modbus logic), and `modbus_client.go` (Modbus client interface and adapter). Dependency injection is used to pass the configuration and Modbus client to the WebSocket handler.
 *   **Efficiency:** A `strings.Builder` is used for efficient string concatenation when formatting Modbus data.
 *   **Robustness:** The error returned by `router.Run()` is checked to ensure the application exits gracefully if the web server fails to start.
 *   **Testing:** Unit tests are included to verify the application's functionality. You can run the tests using `go test ./...`.
 *   **Gin Mode:** Gin runs in `DebugMode` by default, but it switches to `ReleaseMode` when the `release` build tag is used during compilation, improving performance and reducing logging for production deployments.
 *   **Web UI:** The web UI is a single-page application served from the `/` route. The `index.html` file is read from the embedded filesystem and written to the HTTP response. The UI now displays the connected server's address and port, a timestamp of the last update, and the Modbus data in a table format. A visual indicator (a brief color change) is used to show when the data is updated.
+*   **Modbus Communication:** The application uses the `ReadRegisters` function for reading Modbus registers.
 *   **Asset Compression:** Gzip compression is enabled for static asset delivery to optimize performance.
 *   **WebSocket Communication:**
     *   The frontend establishes a WebSocket connection to the `/ws` endpoint to receive real-time data.
@@ -85,6 +86,6 @@ The project relies on the following Go modules:
 
 *   `github.com/gin-gonic/gin`: A web framework for Go.
 *   `github.com/gorilla/websocket`: A WebSocket implementation for Go.
-*   `github.com/goburrow/modbus`: This library provides the necessary functionalities for Modbus TCP communication.
+*   `github.com/simonvetter/modbus`: The Modbus library used for communication. The application abstracts Modbus client operations behind a `ModbusClientInterface` to allow for easier migration to other Modbus libraries.
 *   `github.com/BurntSushi/toml`: Used for parsing and loading configuration settings from the `config.toml` file.
 *   `github.com/gin-contrib/gzip`: Gin middleware for Gzip compression.

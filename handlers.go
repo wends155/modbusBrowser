@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goburrow/modbus"
 	"github.com/gorilla/websocket"
 )
 
@@ -33,23 +32,22 @@ type WebSocketMessage struct {
 type WsHandler struct {
 	upgrader     websocket.Upgrader
 	cfg          Config
-	modbusClient modbus.Client
+	modbusClient ModbusClientInterface // Use the interface type
 }
 
 // readModbusData reads data from the Modbus server and formats it.
 func (h *WsHandler) readModbusData() (string, error) {
-	results, err := h.modbusClient.ReadHoldingRegisters(h.cfg.StartAddress, h.cfg.Quantity)
+	results, err := h.modbusClient.ReadRegisters(h.cfg.StartAddress, h.cfg.Quantity)
 	if err != nil {
 		return "", err
 	}
 
 	var sb strings.Builder
-	for i := 0; i < len(results); i += 2 {
+	for i, value := range results { // results is []uint16
 		if i > 0 {
 			sb.WriteString(", ")
 		}
-		address := h.cfg.StartAddress + uint16(i/2)
-		value := uint16(results[i])<<8 | uint16(results[i+1])
+		address := h.cfg.StartAddress + uint16(i)
 		sb.WriteString(fmt.Sprintf("%d:%d", address, value))
 	}
 	return sb.String(), nil

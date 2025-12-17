@@ -64,12 +64,12 @@ go test ./...
 
 ## How it Works
 
-*   The Go backend is organized into `main.go` for application setup and `handlers.go` for WebSocket and Modbus logic. It serves a simple HTML/CSS/JS frontend, including a favicon. The `index.html` file is read from the embedded filesystem and written directly to the HTTP response. Asset delivery is optimized using gzip compression.
+*   The Go backend is organized into `main.go` for application setup and `handlers.go` for WebSocket and Modbus logic. Modbus client operations are abstracted behind a `ModbusClientInterface` (defined in `modbus_client.go`) to facilitate easier migration to other Modbus libraries. It serves a simple HTML/CSS/JS frontend, including a favicon. The `index.html` file is read from the embedded filesystem and written directly to the HTTP response. Asset delivery is optimized using gzip compression.
 *   The backend uses the Gin web framework. In production builds, Gin is configured to run in `ReleaseMode`.
 *   The frontend establishes a WebSocket connection to the `/ws` endpoint on the backend.
 *   The backend sends structured JSON messages over the WebSocket.
     *   Initially, a message containing the connected server's IP and port is sent.
-    *   Subsequently, messages with continuously updated Modbus register data and a timestamp are sent.
+    *   Subsequently, messages with continuously updated Modbus register data and a timestamp are sent, using the `ReadRegisters` function for Modbus communication.
 *   The frontend receives and parses these JSON messages, then displays the server information, timestamp, and updates the Modbus data in a table in the web UI. A visual indicator shows when the data is updated.
 
 Made by Wendell Saligan

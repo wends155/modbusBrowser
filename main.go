@@ -11,7 +11,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/goburrow/modbus"
 	"github.com/gorilla/websocket"
 )
 
@@ -78,10 +77,16 @@ func setupRouter(cfg Config) *gin.Engine {
 	})
 
 	// Create a new Modbus client.
-	address := fmt.Sprintf("%s:%d", cfg.ServerIP, cfg.ServerPort)
-	handler := modbus.NewTCPClientHandler(address)
-	handler.SlaveId = cfg.SlaveID
-	client := modbus.NewClient(handler)
+
+	client, err := NewSimonvetterModbusClient(&cfg)
+	if err != nil {
+		log.Fatalf("Failed to create Modbus client: %v", err)
+	}
+	err = client.Open()
+	if err != nil {
+		log.Fatalf("Failed to connect to Modbus server: %v", err)
+	}
+	client.SetUnitId(cfg.SlaveID)
 
 	// WebSocket endpoint
 	wsHandler := &WsHandler{
