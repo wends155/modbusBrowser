@@ -1,3 +1,4 @@
+// Package main implements a web-based Modbus TCP browser.
 package main
 
 import (
@@ -14,10 +15,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// webFS is the embedded file system for web assets (HTML, CSS, JS).
+//
 //go:embed all:web
 var webFS embed.FS
 
-// loadConfig loads the configuration from config.toml, creating the file with default values if it doesn't exist.
+// loadConfig loads the configuration from config.toml.
+// If config.toml does not exist, it creates one with default values.
+// If config.toml exists but is invalid, it logs a warning and uses default values.
 func loadConfig() Config {
 	// Default configuration
 	cfg := Config{
@@ -54,20 +59,21 @@ func loadConfig() Config {
 }
 
 // setupRouter creates and configures the Gin router.
+// It sets up static file serving, HTML rendering, and WebSocket endpoint.
 func setupRouter(cfg Config) *gin.Engine {
 	router := gin.Default()
 
-	// Use gzip middleware
+	// Use gzip middleware for asset compression.
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	// Serve static files
+	// Serve static files from the embedded file system.
 	staticFS, err := fs.Sub(webFS, "web/static")
 	if err != nil {
 		log.Fatal(err)
 	}
 	router.StaticFS("/static", http.FS(staticFS))
 
-	// Serve index.html
+	// Serve the main index.html file.
 	router.GET("/", func(c *gin.Context) {
 		indexHTML, err := webFS.ReadFile("web/templates/index.html")
 		if err != nil {
@@ -77,7 +83,6 @@ func setupRouter(cfg Config) *gin.Engine {
 	})
 
 	// Create a new Modbus client.
-
 	client, err := NewModbusClient(&cfg)
 	if err != nil {
 		log.Fatalf("Failed to create Modbus client: %v", err)
@@ -88,7 +93,7 @@ func setupRouter(cfg Config) *gin.Engine {
 	}
 	client.SetUnitId(cfg.SlaveID)
 
-	// WebSocket endpoint
+	// WebSocket endpoint for real-time Modbus data.
 	wsHandler := &WsHandler{
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -107,6 +112,8 @@ func setupRouter(cfg Config) *gin.Engine {
 	return router
 }
 
+// main is the entry point of the application.
+// It loads configuration, sets up the Gin router, and starts the web server.
 func main() {
 	// Set Gin to ReleaseMode if the "release" build tag is used
 	if _, ok := os.LookupEnv("GIN_MODE"); !ok { // Check if GIN_MODE is not set via environment

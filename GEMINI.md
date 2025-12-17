@@ -63,6 +63,7 @@ The project includes a `Makefile` to streamline common development and build tas
 ## Development Conventions
 
 *   **Code Structure:** The Go code is organized into three main files: `main.go` (application setup and routing), `handlers.go` (WebSocket and Modbus logic), and `modbus_client.go` (Modbus client interface and adapter). Dependency injection is used to pass the configuration and Modbus client to the WebSocket handler.
+*   **Code Comments:** All exported identifiers in the Go code now include godoc-compatible comments, improving code clarity and discoverability.
 *   **Efficiency:** A `strings.Builder` is used for efficient string concatenation when formatting Modbus data.
 *   **Robustness:** The error returned by `router.Run()` is checked to ensure the application exits gracefully if the web server fails to start.
 *   **Testing:** Unit tests are included to verify the application's functionality. You can run the tests using `go test ./...`.

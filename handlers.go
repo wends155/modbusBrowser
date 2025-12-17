@@ -29,13 +29,14 @@ type WebSocketMessage struct {
 }
 
 // WsHandler is a handler for WebSocket connections.
+// It manages the WebSocket upgrade, Modbus client, and data streaming.
 type WsHandler struct {
 	upgrader     websocket.Upgrader
 	cfg          Config
 	modbusClient ModbusClientInterface // Use the interface type
 }
 
-// readModbusData reads data from the Modbus server and formats it.
+// readModbusData reads data from the Modbus server and formats it into a human-readable string.
 func (h *WsHandler) readModbusData() (string, error) {
 	results, err := h.modbusClient.ReadRegisters(h.cfg.StartAddress, h.cfg.Quantity)
 	if err != nil {
@@ -54,6 +55,8 @@ func (h *WsHandler) readModbusData() (string, error) {
 }
 
 // ServeHTTP handles WebSocket connections.
+// It upgrades the HTTP connection to a WebSocket connection,
+// then continuously reads Modbus data and sends it to the client.
 func (h *WsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
