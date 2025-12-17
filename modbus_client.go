@@ -30,9 +30,9 @@ func IPtoURL(conf *Config) string {
 	return fmt.Sprintf("tcp://%s:%d", conf.ServerIP, conf.ServerPort)
 }
 
-// NewSimonvetterModbusClient creates a new adapter for simonvetter/modbus.
+// NewModbusClient creates a new adapter for simonvetter/modbus.
 
-func NewSimonvetterModbusClient(cfg *Config) (ModbusClientInterface, error) {
+func NewModbusClient(cfg *Config) (ModbusClientInterface, error) {
 
 	client, err := modbus.NewClient(&modbus.ClientConfiguration{
 

@@ -78,7 +78,7 @@ func setupRouter(cfg Config) *gin.Engine {
 
 	// Create a new Modbus client.
 
-	client, err := NewSimonvetterModbusClient(&cfg)
+	client, err := NewModbusClient(&cfg)
 	if err != nil {
 		log.Fatalf("Failed to create Modbus client: %v", err)
 	}
