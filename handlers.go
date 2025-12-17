@@ -78,30 +78,47 @@ func (h *WsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ticker := time.NewTicker(time.Duration(h.cfg.DelaySeconds) * time.Second)
 	defer ticker.Stop()
 
-	for t := range ticker.C {
-		output, err := h.readModbusData()
-		if err != nil {
-			log.Printf("Error reading holding registers: %v", err)
-			errorMsg := WebSocketMessage{
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			if _, _, err := conn.NextReader(); err != nil {
+				return // client closed or read error
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-done:
+			return
+		case t := <-ticker.C:
+			_ = conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+
+			output, err := h.readModbusData()
+			if err != nil {
+				log.Printf("Error reading holding registers: %v", err)
+				errorMsg := WebSocketMessage{
+					Type:      "modbusData",
+					Content:   fmt.Sprintf("Error: %v", err),
+					Timestamp: t.Format(time.RFC3339),
+				}
+				if err := conn.WriteJSON(errorMsg); err != nil {
+					log.Println("write error data:", err)
+					break
+				}
+				continue
+			}
+
+			dataMsg := WebSocketMessage{
 				Type:      "modbusData",
-				Content:   fmt.Sprintf("Error: %v", err),
+				Content:   output,
 				Timestamp: t.Format(time.RFC3339),
 			}
-			if err := conn.WriteJSON(errorMsg); err != nil {
-				log.Println("write error data:", err)
+			if err := conn.WriteJSON(dataMsg); err != nil {
+				log.Println("write modbus data:", err)
 				break
 			}
-			continue
-		}
-
-		dataMsg := WebSocketMessage{
-			Type:      "modbusData",
-			Content:   output,
-			Timestamp: t.Format(time.RFC3339),
-		}
-		if err := conn.WriteJSON(dataMsg); err != nil {
-			log.Println("write modbus data:", err)
-			break
 		}
 	}
 }

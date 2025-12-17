@@ -59,12 +59,6 @@ func (s *modbusClient) SetUnitId(slaveID byte) {
 	s.client.SetUnitId(slaveID)
 }
 
-// ReadHoldingRegisters implements the ModbusClientInterface ReadHoldingRegisters method.
-// It reads holding registers from the Modbus server.
-func (s *modbusClient) ReadHoldingRegisters(address, quantity uint16) ([]uint16, error) {
-	return s.client.ReadRegisters(address, quantity, modbus.HOLDING_REGISTER)
-}
-
 // ReadRegisters implements the ModbusClientInterface ReadRegisters method.
 // It reads general registers from the Modbus server (in this context, it also reads holding registers).
 func (s *modbusClient) ReadRegisters(addr uint16, quantity uint16) ([]uint16, error) {
